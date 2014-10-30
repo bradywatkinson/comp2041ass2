@@ -27,6 +27,12 @@ sub single_user
 
 	#===========Get all the data we need to make the page==============
 	my $user_name = param('Display_User');
+
+	if (defined $cookies{'active_user'}) {
+		if ($cookies{'active_user'}->value == $user_name) {
+			$active = 1;
+		}
+	}
 	
 	#===get the user info===
 	$sth = $dbh->prepare("SELECT * FROM USERS WHERE USERNAME = ?");
@@ -34,21 +40,30 @@ sub single_user
 	my @user_info = $sth->fetchrow_array();	
 	
 	#===create user hash===
-	my %user;
-	$user{"User ID"} 		= $user_info[0];
-	$user{"First Name"} 	= $user_info[1];
-	$user{"Last Name"} 		= $user_info[2];
-	$user{"Gender"} 		= $user_info[3];
-	$user{"Year"}		 	= $user_info[4];
-	$user{"Month"}			= $user_info[5];
-	$user{"Day"}			= $user_info[6];
-	$user{"Email"} 			= $user_info[7];
-	$user{"Hair Colour"} 	= $user_info[8];
-	$user{"Degree"} 		= $user_info[9];
-	$user{"Height"} 		= $user_info[10];
-	$user{"Weight"} 		= $user_info[11];
-	$user{"Username"} 		= $user_info[12];
-	$user{"Password"} 		= $user_info[13];
+	my %me_user;
+	$me_user{"User ID"} 		= $user_info[0];
+	$me_user{"First Name"} 		= $user_info[1];
+	$me_user{"Last Name"} 		= $user_info[2];
+	$me_user{"Gender"} 			= $user_info[3];
+	$me_user{"Year"}		 	= $user_info[4];
+	$me_user{"Month"}			= $user_info[5];
+	$me_user{"Day"}				= $user_info[6];
+	$me_user{"Email"} 			= $user_info[7];
+	$me_user{"Hair Colour"} 	= $user_info[8];
+	$me_user{"Degree"} 			= $user_info[9];
+	$me_user{"Height"} 			= $user_info[10];
+	$me_user{"Weight"} 			= $user_info[11];
+	$me_user{"Username"} 		= $user_info[12];
+	$me_user{"Password"} 		= $user_info[13];
+	$me_user{"Pref Gender"}		= $user_info[14];
+	$me_user{"Pref Hair"}		= $user_info[15];
+	$me_user{"Pref Age Min"}	= $user_info[16];
+	$me_user{"Pref Age Max"}	= $user_info[17];
+	$me_user{"Pref Height Min"}	= $user_info[18];
+	$me_user{"Pref Height Max"}	= $user_info[19];
+	$me_user{"Pref Weight Min"}	= $user_info[20];
+	$me_user{"Pref Weight Max"}	= $user_info[21];
+	$me_user{"About Me"}		= $user_info[22];
 	
 	#===get the user courses===
 	$sth = $dbh->prepare('SELECT * FROM USER_COURSES WHERE USER_ID = ?');
@@ -102,17 +117,39 @@ sub single_user
 	}
 	$user{"Favourite Movies"} = "@fmovies";
 
-
-	my @fields = ('Degree','Gender','Height','Hair Colour','Favourite Bands','Favourite Hobbies','Favourite TV Shows','Favourite Movies');
-	my @fields_out = map {h3("$_").p($user{$_} || "Not Supplied")."\n"} @fields;
+	if ($active) {
+		my @fields = ('Degree','Gender','Height','Hair Colour','Favourite Bands','Favourite Hobbies','Favourite TV Shows','Favourite Movies');
+		my @fields_out = map {h3("$_").p($user{$_} || "Not Supplied").textfield("$_","0")."\n"} @fields;
+	} else {
+		my @fields = ('Degree','Gender','Height','Hair Colour','Favourite Bands','Favourite Hobbies','Favourite TV Shows','Favourite Movies');
+		my @fields_out = map {h3("$_").p($user{$_} || "Not Supplied")."\n"} @fields;
+	}
 
 	#==================Now Make the Page================================
 
-	main_forms();
-	print	div({-id=>'centreDoc'},
-				h2($user{"Username"}), "\n",
-				p({align=>'CENTRE'}, img {src=>"students/$user{'Username'}/profile.jpg"}, "\n"),
-				"@fields_out",
-				p, "\n"
-			);
+	if ($active) {
+		main_forms();
+		print	div({-id=>'centreDoc'},
+					h2($user{"Username"}), "\n",
+					start_form, "\n",
+					p({align=>'CENTRE'}, img {src=>"database/students/$user{'Username'}/profile.jpg"}, "\n"),
+					"@fields_out",
+					submit({-class=>"button button-rounded button-action buttonWidth",-name=>'Update',-value=>'Update'}),"\n",
+					end_form, "\n",
+					p, "\n"
+				);
+	} else {
+		main_forms();
+		print	div({-id=>'centreDoc'},
+					h2($user{"Username"}), "\n",
+					p({align=>'CENTRE'}, img {src=>"students/$user{'Username'}/profile.jpg"}, "\n"),
+					"@fields_out",
+					p, "\n"
+				);
+	}
+}
+
+sub update_user
+{
+	
 }

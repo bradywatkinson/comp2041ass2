@@ -11,18 +11,21 @@ use DBI;
 
 $dbh = DBI->connect('dbi:SQLite:database/love2041_DB', 'root', 'password') or die;
 
-
 #===actual execution=====
 fetch_cookies();
-welcome_page();
+page_header();
+landing_page();
 page_trailer();
 exit 0;	
 #========================
 
-sub welcome_page
+
+#======Functions========
+
+sub landing_page
 {
 	main_forms();
 	print	div({-id=>'centreDoc'},
-				h2('With a proven match record, join love2041!'),"\n",				
+				p('With a proven match record, find love with LOVE2041'),"\n",				
 			);
 }

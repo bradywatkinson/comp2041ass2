@@ -104,7 +104,7 @@ sub show_search
 					hidden('Display_Page',$page_num),"\n",
 					hidden('Browse', 'Browse'),"\n",
 					submit({-class=>"button button-rounded button-action buttonWidth",-name=>'Previous',-value=>'Previous'}),"\n",
-					end_form;
+					end_form
 				);
 	}
 }

@@ -20,10 +20,10 @@ my $page = param('Display_Page') || 0;
 $page += 1 if defined(param('Next'));
 $page -= 1 if defined(param('Previous'));
 param('Display_Page',$page);
-make_matches();
-#page_header();
-#browse_matches($page);
-#page_trailer();
+#make_matches();
+page_header();
+browse_matches($page);
+page_trailer();
 exit 0;	
 #========================
 
@@ -63,7 +63,7 @@ sub make_matches
 	my @me_favs;
 	
 	#===create user hash===
-	my %user;
+	my %me_user;
 	$me_user{"User ID"} 		= $user_info[0];
 	$me_user{"First Name"} 		= $user_info[1];
 	$me_user{"Last Name"} 		= $user_info[2];
@@ -91,7 +91,7 @@ sub make_matches
 	
 	@prefs = map {p("$_->$me_user{$_}"),"\n"} @pref;
 	
-	print p("making matches for $me_user{'Username'}"),"\n",@prefs;
+	#print p("making matches for $me_user{'Username'}"),"\n",@prefs;
 	@want_hair = split '', $me_user{"Pref Hair"};
 		
 	#===get the me courses===
@@ -154,12 +154,12 @@ sub make_matches
 		$mheight	= $users{"Height"};
 		$mweight	= $users{"Weight"};
 		
-		print "$users{\"Username\"}->$score","\n";
+		#print "$users{\"Username\"}->$score","\n";
 		
-		#my $sql_insert_users = "INSERT INTO MATCHES	VALUES ('$mid','$mname','$mgender','$mhair','$mdegree','$mheight','$mweight','$score')";
+		my $sql_insert_users = "INSERT INTO MATCHES	VALUES ('$mid','$mname','$mgender','$mhair','$mdegree','$mheight','$mweight','$score')";
 		#print p("$sql_insert_users\n");
-		#$sth = $dbh->prepare($sql_insert_users);
-		#$sth->execute or die "SQL Error: $DBI::errstr\n";		
+		$sth = $dbh->prepare($sql_insert_users);
+		$sth->execute or die "SQL Error: $DBI::errstr\n";		
 	}
 }
 
@@ -177,8 +177,8 @@ sub browse_matches
 	my $page;
 	($page) = (@_);
 	#===get the user info===
-	$sth = $dbh->prepare("SELECT * FROM MATCHES ORDER BY SCORE");
-	$sth->execute() or die "SQL Error: $DBI::errstr\n";	
+	$sth = $dbh->prepare("SELECT * FROM MATCHES ORDER BY SCORE DESC LIMIT 10 OFFSET ?");
+	$sth->execute($page) or die "SQL Error: $DBI::errstr\n";	
 
 	my %users;
 	my @profiles;
@@ -197,7 +197,7 @@ sub browse_matches
 		$user_link = "page_display_user.cgi?Display_User\=$users{\"Username\"}";
 		push @profiles, a({-href=>"$user_link",-class=>'profile'},
 							div({-class=>'.browseprofile'},
-								(img {src=>"students/$users{'Username'}/profile.jpg",align=>'LEFT'},"\n", map {p("$_: $users{$_}")} @fields)
+								(img {src=>"database/students/$users{'Username'}/profile.jpg",align=>'LEFT'},"\n", map {p("$_: $users{$_}")} @fields)
 							)
 						)
 	}
