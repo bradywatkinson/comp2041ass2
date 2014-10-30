@@ -11,53 +11,81 @@ use DBI;
 
 $dbh = DBI->connect('dbi:SQLite:database/love2041_DB', 'root', 'password') or die;
 
+
 #===actual execution=====
+
 fetch_cookies();
+
+my $page = param('Display_Page') || 0;
+$page += 1 if defined(param('Next'));
+$page -= 1 if defined(param('Previous'));
+param('Display_Page',$page);
+
 page_header();
-if (defined param('Search')) {
-	my $page = param('Display_Page') || 0;
-	$page += 1 if defined(param('Next'));
-	$page -= 1 if defined(param('Previous'));
-	param('Display_Page',$page);
-	show_search($page);
-} else {
-	search_user()
-}
+browse_users_page($page);
 page_trailer();
 exit 0;	
 #========================
 
 
-#======Functions========
-
-sub search_user
+sub browse_users_page
 {
-	main_forms();
-	print	div({-id=>'centreDoc'},
-				start_form, "\n",
-				fieldset({},
-					legend("Search User"),
-					table({-cellpadding=>'3'},
-						Tr(td({-width=>'200px'},"Search: ".td(textfield("Search","",20,20)))."\n"),
-					)
-				), "\n",
-				submit({-class=>"button button-rounded button-action buttonWidth",-name=>'Search',-value=>'Search'},'Search'),"\n",
-				a({-href=>'love2041.cgi',-class=>"button button-rounded button-action buttonWidth"},'Cancel'),"\n",
-				end_form
-			);
-}
+
+#.........Courses Table..............
+my $sql_table = "DROP TABLE IF EXISTS MATCHES";
+$sth = $dbh->prepare($sql_table);
+$sth->execute or die "SQL Error: $DBI::errstr\n";
 
 
-sub show_search
-{
-	my $page;
-	($page) = (@_);
+my $sql_make_user_courses = "
+	CREATE TABLE IF NOT EXISTS MATCHES(
+	COURSE_CODE 		CHAR(8), 
+	YEAR 				CHAR(4),
+	SEMESTER 			CHAR(2),
+	USER_ID 			CHAR(6),
+	FOREIGN KEY(USER_ID)
+		REFERENCES USERS(USER_ID)
+		ON DELETE CASCADE
+	PRIMARY KEY(USER_ID, COURSE_CODE, SEMESTER, YEAR))";
+$sth = $dbh->prepare($sql_make_user_courses);
+$sth->execute or die "SQL Error: $DBI::errstr\n";
+
+#========get my info==============
+	my $username = %cookies{'active_user'}->value;
+	$sth = $dbh->prepare("SELECT * FROM USERS WHERE USERNAME = ?");
+	$sth->execute($username) or die "SQL Error: $DBI::errstr\n";	
 	
-	$search = param('Search');
+	my %me;
+	@me_info = $sth->fetchrow_array) {
+	#===create user hash===
+	$me{"User ID"} 		= $me_info[0];
+	$me{"First Name"} 	= $me_info[1];
+	$me{"Last Name"} 	= $me_info[2];
+	$me{"Gender"} 		= $me_info[3];
+	$me{"Year"}			= $me_info[4];
+	$me{"Month"}		= $me_info[5];
+	$me{"Day"}			= $me_info[6];
+	$me{"Email"} 		= $me_info[7];
+	$me{"Hair Colour"} 	= $me_info[8];
+	$me{"Degree"} 		= $me_info[9];
+	$me{"Height"} 		= $me_info[10];
+	$me{"Weight"} 		= $me_info[11];
+	$me{"Username"} 	= $me_info[12];
+	$me{"Password"} 	= $me_info[13];
+	$me("Pref Gender"}	= $me_info[14];
+	$me("Pref Hair"}	= $me_info[14];
+	$me("Pref Age Min"}	= $me_info[14];
+	$me("Pref Age Max"}	= $me_info[14];
+	$me("Pref Height Min"}	= $me_info[14];
+	$me("Pref Height Max"}	= $me_info[14];
+	$me("Pref Weight Min"}	= $me_info[14];
+	$me("Pref Weight Max"}	= $me_info[14];
 	
+	
+#========get my info==============
+
 	#===get the user info===
-	$sql = "SELECT * FROM USERS WHERE USERNAME LIKE '\%$search\%' LIMIT 10 OFFSET ?";
-	$sth = $dbh->prepare($sql);
+	$sth = $dbh->prepare("SELECT * FROM USERS LIMIT 10 OFFSET ?");
 	$sth->execute($page*10) or die "SQL Error: $DBI::errstr\n";	
 
 	my %users;
@@ -88,34 +116,24 @@ sub show_search
 						)
 	}
 	
-	if (defined $users{"User ID"}) {
-		main_forms();
-		print	div({-id=>'profileSection'},
-					prev_next_form($page,$search),
-					@profiles,
-					prev_next_form($page,$search)
-				);
-	} else {
-		main_forms();
-		print	div({-id=>'profileSection'},
-					p('No more users'),
-					start_form, "\n",
-					hidden('Search',$search),
-					hidden('Display_Page',$page_num),"\n",
-					hidden('Browse', 'Browse'),"\n",
-					submit({-class=>"button button-rounded button-action buttonWidth",-name=>'Previous',-value=>'Previous'}),"\n",
-					end_form;
-				);
-	}
+#========displat page==============	
+	my $page;
+	($page) = (@_);
+	
+	main_forms();
+	print	div({-id=>'profileSection'},
+				prev_next_form($page),
+				@profiles,
+				prev_next_form($page)
+			);
 }
 
 sub prev_next_form
 {
 	my $page_num;
-	($page_num,$search) = (@_);
+	($page_num) = (@_);
 	if ($page_num > 0) {
 		return 	start_form, "\n",
-				hidden('Search',$search),
 				hidden('Display_Page',$page_num),"\n",
 				hidden('Browse', 'Browse'),"\n",
 				submit({-class=>"button button-rounded button-action buttonWidth",-name=>'Previous',-value=>'Previous'}),"\n",
@@ -123,11 +141,9 @@ sub prev_next_form
 				end_form;
 	} else {
 		return 	start_form, "\n",
-				hidden('Search',$search),
 				hidden('Display_Page',$page_num),"\n",
 				hidden('Browse', 'Browse'),"\n",
 				submit({-class=>"button button-rounded button-action buttonWidth",-name=>'Next',-value=>'Next'}),"\n",
 				end_form;
 	}
 }
-
