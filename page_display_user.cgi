@@ -28,8 +28,9 @@ sub single_user
 	#===========Get all the data we need to make the page==============
 	my $user_name = param('Display_User');
 
+	my $active = -1;
 	if (defined $cookies{'active_user'}) {
-		if ($cookies{'active_user'}->value == $user_name) {
+		if ($cookies{'active_user'}->value eq $user_name) {
 			$active = 1;
 		}
 	}
@@ -127,8 +128,8 @@ sub single_user
 	my @fields;
 	my @fields_out;
 	
-	if ($active) {
-		@fields = ('First Name','Last Name','Email','Password','Degree','Height','Weight','Hair Colour','Favourite Bands','Favourite Hobbies','Favourite TV Shows','Favourite Movies','Favourite Books',
+	if ($active == 1) {
+		@fields = ('About Me','First Name','Last Name','Email','Password','Degree','Height','Weight','Hair Colour','Favourite Bands','Favourite Hobbies','Favourite TV Shows','Favourite Movies','Favourite Books',
 						'Pref Gender','Pref Hair','Pref Age Min','Pref Age Max','Pref Height Min','Pref Height Max','Pref Weight Min','Pref Weight Max');
 		@fields_out = map {h3("$_").p($me_user{$_} || "Not Supplied").p(textfield("$_","0"))."\n"} @fields;
 	} else {
@@ -138,13 +139,14 @@ sub single_user
 
 	#==================Now Make the Page================================
 
-	if ($active) {
+	if ($active == 1) {
 		main_forms();
 		print	div({-id=>'centreDoc'},
 					h2($user{"Username"}), "\n",
 					start_form, "\n",
 					hidden('Display_User', $user_name),"\n",
 					hidden('User_ID',$me_user{"User ID"}),"\n",
+					submit({-class=>"button button-rounded button-action buttonWidth",-name=>'Update',-value=>'Update'}),"\n",
 					p({align=>'centre'}, img {src=>"database/students/$me_user{'Username'}/profile.jpg"}, "\n"),
 					"@fields_out","\n",p,
 					submit({-class=>"button button-rounded button-action buttonWidth",-name=>'Update',-value=>'Update'}),"\n",
@@ -167,7 +169,7 @@ sub update_user
 	$user = $_[0];
 	
 	my @updates;
-	@fields = ('First Name','Last Name','Email','Password','Degree','Height','Weight','Hair Colour',
+	@fields = ('About Me','First Name','Last Name','Email','Password','Degree','Height','Weight','Hair Colour',
 						'Pref Gender','Pref Hair','Pref Age Min','Pref Age Max','Pref Height Min','Pref Height Max','Pref Weight Min','Pref Weight Max');
 	foreach $param (param()) {
 		if ($param ~~ @fields && param($param) ne '0') {
