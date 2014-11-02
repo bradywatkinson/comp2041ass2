@@ -68,9 +68,9 @@ $sth->execute or die "SQL Error: $DBI::errstr\n";
 
 my $sql_make_user_favourites = "
 	CREATE TABLE IF NOT EXISTS USER_FAVOURITES(
-	USER_ID CHAR(6), 
-	TYPE_ID VARCHAR,
-	NAME VARCHAR,
+	USER_ID 	INTEGER, 
+	TYPE_ID 	TEXT,
+	NAME 		TEXT,
 	FOREIGN KEY(USER_ID)
 		REFERENCES USERS(USER_ID)
 		ON DELETE CASCADE
@@ -78,5 +78,21 @@ my $sql_make_user_favourites = "
 $sth = $dbh->prepare($sql_make_user_favourites);
 $sth->execute or die "SQL Error: $DBI::errstr\n";
 
+#.........Messages Table..............
+my $sql_drop_messages = "DROP TABLE IF EXISTS MESSAGES";
+$sth = $dbh->prepare($sql_drop_messages);
+$sth->execute or die "SQL Error: $DBI::errstr\n";
 
+my $sql_make_messages = "
+	CREATE TABLE IF NOT EXISTS MESSAGES(
+	MESSAGE_ID	INTEGER PRIMARY KEY AUTOINCREMENT,
+	GIVE_ID 	TEXT, 
+	GET_ID 		TEXT,
+	MESSAGE		TEXT,
+	SEND_TIME	DATETIME
+	FOREIGN KEY(GIVE_ID, GET_ID)
+		REFERENCES USERS(USER_ID)
+		ON DELETE CASCADE)";
+$sth = $dbh->prepare($sql_make_messages);
+$sth->execute or die "SQL Error: $DBI::errstr\n";
 #=========End Create Tables===========

@@ -138,9 +138,9 @@ sub extract_user
 		$sth->execute or die "SQL Error: $DBI::errstr\n";	
 	}
 
-	#=====insert into user_courses table=====
+	#=====insert into user_favouties table=====
 	foreach $key (keys %favourites) {
-		my $type		= $favourites{$key} || "";
+		my $type	= $favourites{$key} || "";
 	  (my $name		= $key) =~ s/'/''/g;
 		my $sql_insert_users_favourites = "INSERT INTO USER_FAVOURITES VALUES('$id','$type','$name')";
 		#print "$sql_insert_users_favourites\n";

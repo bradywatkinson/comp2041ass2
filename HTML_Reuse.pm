@@ -40,7 +40,7 @@ sub main_forms
 {
 	print div({-id=>'headSpace'},h1('Welcome to LOVE2041'));
 	
-	if 	(defined $cookies{'active_user'}) {
+	if 	(defined $cookies{'active_user'} and $cookies{'active_user'}->value ne "") {
 	printf	div({-id=>'navigationBar'},
 				p("Logged in as %s"),
 				start_form, "\n",
@@ -51,6 +51,7 @@ sub main_forms
 				a({-href=>'page_login.cgi',-class=>"button button-rounded button-action buttonWidth"},'Login'),"\n",
 				a({-href=>'page_search_users.cgi',-class=>"button button-rounded button-action buttonWidth"},'Search'),"\n",
 				a({-href=>"page_display_user.cgi?Display_User\=%s",-class=>"button button-rounded button-action buttonWidth"},'My Profile'),"\n",
+				a({-href=>'love2041.cgi?Log_Out=1',-class=>"button button-rounded button-action buttonWidth"},'Log Out'),"\n",
 				end_form, "\n",
 			),$cookies{'active_user'}->value,$cookies{'active_user'}->value;
 	} else {

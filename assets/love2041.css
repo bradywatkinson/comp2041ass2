@@ -64,13 +64,15 @@ p
 	margin: 0;
 	font-weight: normal;
 	line-height: 1.6em;
+	font-size: 20px;
 	color: #777;
 	text-align: left;
 }
 
 li
 {
-	font-size: 18px;
+	font-size: 20px;
+	color: #777;
 	text-align: left;
 }
 
