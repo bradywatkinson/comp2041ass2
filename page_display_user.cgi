@@ -131,7 +131,7 @@ sub single_user
 	if ($active == 1) {
 		@fields = ('About Me','First Name','Last Name','Email','Password','Degree','Height','Weight','Hair Colour','Favourite Bands','Favourite Hobbies','Favourite TV Shows','Favourite Movies','Favourite Books',
 						'Pref Gender','Pref Hair','Pref Age Min','Pref Age Max','Pref Height Min','Pref Height Max','Pref Weight Min','Pref Weight Max');
-		@fields_out = map {h3("$_").p($me_user{$_} || "Not Supplied").p(textfield("$_","0"))."\n"} @fields;
+		@fields_out = map {h3("$_").p($me_user{$_} || "Not Supplied").p(input({-type=>'text',-pattern=>'\w+',-name=>$_,-value=>'0'}))."\n"} @fields;
 	} else {
 		@fields = ('About Me','Degree','Gender','Height','Hair Colour','Favourite Bands','Favourite Hobbies','Favourite TV Shows','Favourite Movies','Favourite Books');
 		@fields_out = map {h3("$_").p($me_user{$_} || "Not Supplied")."\n"} @fields;
@@ -158,6 +158,9 @@ sub single_user
 		print	div({-id=>'centreDoc'},
 					h2($user{"Username"}), "\n",
 					p({align=>'CENTRE'}, img {src=>"database/students/$me_user{'Username'}/profile.jpg"}, "\n"),
+					start_form, "\n",
+					#p,a({-href=>'page_messages_user.cgi?Display_User='.$me_user{"Username"},-class=>"button button-rounded button-action buttonWidth"},'Message'),"\n",
+					end_form, "\n",
 					"@fields_out",
 					p, "\n"
 				);

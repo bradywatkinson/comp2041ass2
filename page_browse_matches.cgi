@@ -182,7 +182,7 @@ sub browse_matches
 
 	my %users;
 	my @profiles;
-	my @fields = ('Username','Height','Weight','Hair Colour','Degree','Score');
+	my @fields = ('Username','Height','Weight','Hair Colour','Degree');
 	while (my @user_info = $sth->fetchrow_array) {
 		#===create user hash===
 		$users{"User ID"} 		= $user_info[0];

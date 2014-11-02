@@ -23,6 +23,8 @@ if (param('Login')) {
 	process_login();
 }
 
+
+
 if ($authenticated == 1) {
 	page_header_new_cookie();
 	authen_page_g();
@@ -77,7 +79,8 @@ sub login_page
 						Tr(td({-width=>$table_width,-type=>"password"},"Password: ".td(textfield("Password","",20,20)))."\n"),
 					)
 				), "\n",
-				submit({-class=>"button button-rounded button-action buttonWidth",-name=>'Login',-value=>'Login'},'Login'),"\n",
+				submit({-class=>"button button-rounded button-action buttonWidth",-name=>'Login',-value=>'Login'},),"\n",
+				#submit({-class=>"button button-rounded button-action buttonWidth",-name=>'Recover Password',-value=>'Recover Password'}),"\n",
 				a({-href=>'love2041.cgi',-class=>"button button-rounded button-action buttonWidth"},'Cancel'),"\n",
 				end_form
 			);
