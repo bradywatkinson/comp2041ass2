@@ -34,6 +34,9 @@ sub single_user
 		}
 	}
 	
+	my $me_id = param('User_ID');
+	
+	update_user($me_id) if (defined param('Update'));
 	#===get the user info===
 	$sth = $dbh->prepare("SELECT * FROM USERS WHERE USERNAME = ?");
 	$sth->execute($user_name) or die "SQL Error: $DBI::errstr\n";	
@@ -68,13 +71,11 @@ sub single_user
 	#===get the user courses===
 	$sth = $dbh->prepare('SELECT * FROM USER_COURSES WHERE USER_ID = ?');
 	$sth->execute($user_info[0]) or die "SQL Error: $DBI::errstr\n";		
-	#my $courses = "";
 	my @courses;
 	while (my @row_courses = $sth->fetchrow_array) {
-		#$courses .= "@row"."\n";
 		push @courses, p("@row_courses");
 	}
-	$user{"Courses"} = "@courses";
+	$me_user{"Courses"} = "@courses";
 
 	#===get the user favourites===
 	#===get bands===
@@ -85,44 +86,54 @@ sub single_user
 	while (my @row_1 = $sth->fetchrow_array) {
 		push @fbands, " ".li("@row_1[2]")."\n";
 	}
-	$user{"Favourite Bands"} = "@fbands";
+	$me_user{"Favourite Bands"} = "@fbands";
 	
 	#===get hobbies===
 	$sth = $dbh->prepare('SELECT * FROM USER_FAVOURITES WHERE USER_ID = ? AND TYPE_ID = "favourite_hobbies"');
 	$sth->execute($user_info[0]) or die "SQL Error: $DBI::errstr\n";	
-	#my $courses = "";
 	my @fhobs;
 	while (my @row_2 = $sth->fetchrow_array) {
 		push @fhobs, " ".li("@row_2[2]")."\n";
 	}
-	$user{"Favourite Hobbies"} = "@fhobs";
+	$me_user{"Favourite Hobbies"} = "@fhobs";
 	
 	#===get TV===
 	$sth = $dbh->prepare('SELECT * FROM USER_FAVOURITES WHERE USER_ID = ? AND TYPE_ID = "favourite_TV_shows"');
 	$sth->execute($user_info[0]) or die "SQL Error: $DBI::errstr\n";	
-	#my $courses = "";
 	my @ftv;
 	while (my @row_3 = $sth->fetchrow_array) {
 		push @ftv, " ".li("@row_3[2]")."\n";
 	}
-	$user{"Favourite TV Shows"} = "@ftv";
+	$me_user{"Favourite TV Shows"} = "@ftv";
 	
 	#===get movies===
 	$sth = $dbh->prepare('SELECT * FROM USER_FAVOURITES WHERE USER_ID = ? AND TYPE_ID = "favourite_movies"');
 	$sth->execute($user_info[0]) or die "SQL Error: $DBI::errstr\n";	
-	#my $courses = "";
 	my @fmovies;
 	while (my @row_4 = $sth->fetchrow_array) {
 		push @fmovies, " ".li("@row_4[2]")."\n";
 	}
-	$user{"Favourite Movies"} = "@fmovies";
+	$me_user{"Favourite Movies"} = "@fmovies";
+	
+	#===get books===
+	$sth = $dbh->prepare('SELECT * FROM USER_FAVOURITES WHERE USER_ID = ? AND TYPE_ID = "favourite_books"');
+	$sth->execute($user_info[0]) or die "SQL Error: $DBI::errstr\n";	
+	my @fmovies;
+	while (my @row_5 = $sth->fetchrow_array) {
+		push @fbooks, " ".li("@row_5[2]")."\n";
+	}
+	$me_user{"Favourite Books"} = "@fbooks";
 
+	my @fields;
+	my @fields_out;
+	
 	if ($active) {
-		my @fields = ('Degree','Gender','Height','Hair Colour','Favourite Bands','Favourite Hobbies','Favourite TV Shows','Favourite Movies');
-		my @fields_out = map {h3("$_").p($user{$_} || "Not Supplied").textfield("$_","0")."\n"} @fields;
+		@fields = ('First Name','Last Name','Email','Password','Degree','Height','Weight','Hair Colour','Favourite Bands','Favourite Hobbies','Favourite TV Shows','Favourite Movies','Favourite Books',
+						'Pref Gender','Pref Hair','Pref Age Min','Pref Age Max','Pref Height Min','Pref Height Max','Pref Weight Min','Pref Weight Max');
+		@fields_out = map {h3("$_").p($me_user{$_} || "Not Supplied").p(textfield("$_","0"))."\n"} @fields;
 	} else {
-		my @fields = ('Degree','Gender','Height','Hair Colour','Favourite Bands','Favourite Hobbies','Favourite TV Shows','Favourite Movies');
-		my @fields_out = map {h3("$_").p($user{$_} || "Not Supplied")."\n"} @fields;
+		@fields = ('About Me','Degree','Gender','Height','Hair Colour','Favourite Bands','Favourite Hobbies','Favourite TV Shows','Favourite Movies','Favourite Books');
+		@fields_out = map {h3("$_").p($me_user{$_} || "Not Supplied")."\n"} @fields;
 	}
 
 	#==================Now Make the Page================================
@@ -132,8 +143,10 @@ sub single_user
 		print	div({-id=>'centreDoc'},
 					h2($user{"Username"}), "\n",
 					start_form, "\n",
-					p({align=>'CENTRE'}, img {src=>"database/students/$user{'Username'}/profile.jpg"}, "\n"),
-					"@fields_out",
+					hidden('Display_User', $user_name),"\n",
+					hidden('User_ID',$me_user{"User ID"}),"\n",
+					p({align=>'centre'}, img {src=>"database/students/$me_user{'Username'}/profile.jpg"}, "\n"),
+					"@fields_out","\n",p,
 					submit({-class=>"button button-rounded button-action buttonWidth",-name=>'Update',-value=>'Update'}),"\n",
 					end_form, "\n",
 					p, "\n"
@@ -142,7 +155,7 @@ sub single_user
 		main_forms();
 		print	div({-id=>'centreDoc'},
 					h2($user{"Username"}), "\n",
-					p({align=>'CENTRE'}, img {src=>"students/$user{'Username'}/profile.jpg"}, "\n"),
+					p({align=>'CENTRE'}, img {src=>"database/students/$me_user{'Username'}/profile.jpg"}, "\n"),
 					"@fields_out",
 					p, "\n"
 				);
@@ -151,5 +164,40 @@ sub single_user
 
 sub update_user
 {
+	$user = $_[0];
 	
+	my @updates;
+	@fields = ('First Name','Last Name','Email','Password','Degree','Height','Weight','Hair Colour',
+						'Pref Gender','Pref Hair','Pref Age Min','Pref Age Max','Pref Height Min','Pref Height Max','Pref Weight Min','Pref Weight Max');
+	foreach $param (param()) {
+		if ($param ~~ @fields && param($param) ne '0') {
+			my $tmp = param($param);
+			$param =~ tr/a-z /A-Z_/;
+			push @updates, "$param = '$tmp'";
+		}
+	}
+	
+	if (@updates) {
+		my $sql = "UPDATE USERS SET ".join (', ',@updates)." WHERE USER_ID = $user";
+		#print "$sql\n";
+		my $rv = $dbh->do($sql) or die $DBI::errstr;
+		print $DBI::errstr if( $rv < 0 );
+	}
+	
+	my @favs = ('Favourite Bands','Favourite Hobbies','Favourite TV Shows','Favourite Movies','Favourite Books');
+	
+	foreach $fav (@favs) {
+		if (param($fav) ne '0') {
+			my $name = param($fav);
+			$name =~ s/'/''/g;
+			$name =~ s/"/""/g;
+			$name =~ s/[^\"\'\w\d\s]//;
+			$fav =~ tr/FMSHB /fmshb_/;
+
+			my $sql_insert_users_favourites = "INSERT INTO USER_FAVOURITES VALUES('$user','$fav','$name')";
+			#print p($sql_insert_users_favourites);
+			$sth = $dbh->prepare($sql_insert_users_favourites);
+			$sth->execute or die "SQL Error: $DBI::errstr\n";	
+		}
+	}
 }

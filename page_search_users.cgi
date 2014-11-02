@@ -83,7 +83,7 @@ sub show_search
 		$user_link = "page_display_user.cgi?Display_User\=$users{\"Username\"}";
 		push @profiles, a({-href=>"$user_link",-class=>'profile'},
 							div({-class=>'.browseprofile'},
-								(img {src=>"students/$users{'Username'}/profile.jpg",align=>'LEFT'},"\n", map {p("$_: $users{$_}")} @fields)
+								(img {src=>"database/students/$users{'Username'}/profile.jpg",align=>'LEFT'},"\n", map {p("$_: $users{$_}")} @fields)
 							)
 						)
 	}

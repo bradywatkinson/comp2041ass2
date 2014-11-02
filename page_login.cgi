@@ -106,7 +106,7 @@ sub page_header_new_cookie
 			<head>
 			 <title>LOVE2041</title>
 			 <link rel=\"stylesheet\" type=\"text/css\" href=\"assets/love2041.css\">
-			 <link rel=\"stylesheet\" type=\"text/css\" href=\"assets/css/buttons.css\">
+			 <link rel=\"stylesheet\" type=\"text/css\" href=\"assets/buttons.css\">
 			 <!-- $active_user-->
 			</head>";
 }
